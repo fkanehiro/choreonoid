@@ -52,7 +52,7 @@ NailDriver::NailDriver()
     normal << 0, 0, 0;
     maxFasteningForce = std::numeric_limits<double>::max();
 
-    not_called_conunt = 0;
+    not_called_count = 0;
     near_callback_called = false;
 
     resetLatestContact();
@@ -61,6 +61,8 @@ NailDriver::NailDriver()
 void NailDriver::copyStateFrom(const NailDriver& other)
 {
     on_ = other.on_;
+    not_called_count = other.not_called_count;
+    near_callback_called = other.near_callback_called;
 }
 
 void NailDriver::copyStateFrom(const DeviceState& other)
@@ -95,8 +97,9 @@ double* NailDriver::writeState(double* out_buf) const
 }
 
 void NailDriver::on(bool on) {
-    MessageView::instance()->putln(boost::format(_("*** %s: %s ***")) % typeName() % (on ? "ON" : "OFF"));
-    cout << boost::format(_("*** %s: %s ***")) % typeName() % (on ? "ON" : "OFF") << endl;
+    string msg = str(boost::format(_("%s: %s %s => %s")) % typeName() % link()->name() % (on_ ? "ON" : "OFF") % (on ? "ON" : "OFF"));
+    MessageView::instance()->putln(msg);
+    cout << msg << endl;
 
     if (on_ == false && on == true) {
         // By switching from off to on,
@@ -109,25 +112,36 @@ void NailDriver::on(bool on) {
 
 void NailDriver::setReady()
 {
-
-    MessageView::instance()->putln(boost::format(_("%s: Ready")) % typeName());
-    cout << boost::format(_("%s: Ready")) % typeName() << endl;
+    string msg = str(boost::format(_("%s: %s Ready")) % typeName() % link()->name());
+    MessageView::instance()->putln(msg);
+    cout << msg << endl;
 
     ready_ = true;
 }
 
 void NailDriver::fire(NailedObject* nobj)
 {
-
-    MessageView::instance()->putln(boost::format(_("%s: Fire")) % typeName());
-    cout << boost::format(_("%s: Fire")) % typeName() << endl;
+    string msg;
+    msg = str(boost::format(_("%s: %s Fire")) % typeName() % link()->name());
+    MessageView::instance()->putln(msg);
+    cout << msg << endl;
 
     if (nobj->getNailCount() == 0) {
+#ifdef NAILDRIVER_STATUS
+        MessageView::instance()->putln("NailDriver: *** joint created **");
+        cout << "NailDriver: *** joint created **" << endl;
+#endif // NAILDRIVER_STATUS
+
         const Vector3 n = link()->R() * normal;
         nobj->setNailDirection(n);
     }
 
     nobj->addNail(maxFasteningForce);
+#ifdef NAILDRIVER_STATUS
+    msg = str(boost::format("NailDriver: nail count = %d") % nobj->getNailCount());
+    MessageView::instance()->putln(msg);
+    cout << msg << endl;
+#endif // NAILDRIVER_STATUS
     ready_ = false;
 }
 
@@ -137,41 +151,42 @@ void NailDriver::distantCheck(int distantCheckCount)
         // Check number of times nearCallback() was not called continuously.
         // If more than distantCheckCount times, it is processing as a
         // distant from object.
-        if (not_called_conunt < distantCheckCount) {
-            not_called_conunt++;
+        if (not_called_count < distantCheckCount) {
+            not_called_count++;
         } else {
             if (on() && !ready()) {
                 setReady();
             }
         }
     } else {
+#ifdef NAILDRIVER_DEBUG
+        if (not_called_count >= distantCheckCount) {
+            string msg = str(boost::format("NailDriver: %d step") % not_called_count);
+            MessageView::instance()->putln(msg);
+            cout << msg << endl;
+        }
+#endif // NAILDRIVER_DEBUG
         // Since the nearCallback() was called, reset the counter.
-        not_called_conunt = 0;
+        not_called_count = 0;
         // And reset the flag.
         near_callback_called = false;
     }
 }
 
-int NailDriver::checkContact(int numContacts, dContact* contacts)
+/**
+ * @brief Check whether or not parallel the muzzle and the object.
+ */
+int NailDriver::checkContact(int numContacts, dContact* contacts, double dotThreshold, double distanceThreshold)
 {
     Link* link_ = link();
     Vector3 muzzle = link_->p() + link_->R() * position;
-#ifdef NAILDRIVER_DEBUG
-cout << "NailDriver: muzzle:" << str(muzzle) << endl;
-#endif // NAILDRIVER_DEBUG
+
     int n = 0;
     for (int i=0; i < numContacts; ++i) {
 	Vector3 pos(contacts[i].geom.pos);
 	Vector3 v(contacts[i].geom.normal);
-#ifdef NAILDRIVER_DEBUG
-cout << "NailDriver: pos:" << str(pos) << endl;
-cout << "NailDriver:   v:" << str(v) << endl;
-#endif // NAILDRIVER_DEBUG
 
 	float isParallel = (link_->R() * normal).dot(v);
-#ifdef NAILDRIVER_DEBUG
-cout << "NailDriver: isParallel: " << isParallel << endl;
-#endif // NAILDRIVER_DEBUG
 
 	// Distance gripper (P: muzzle) and contact (A:pos)
 	Vector3 pa;
@@ -180,10 +195,7 @@ cout << "NailDriver: isParallel: " << isParallel << endl;
 	pa[2] = pos[2] - muzzle[2];
 
 	float distance = fabs(muzzle.dot(pa));
-#ifdef NAILDRIVER_DEBUG
-cout << "NailDriver: distance: " << distance << endl;
-#endif // NAILDRIVER_DEBUG
-	if (isParallel < -0.9f && distance < 0.04f) {
+        if (isParallel < dotThreshold && distance < distanceThreshold) {
 	    n++;
 	}
     }

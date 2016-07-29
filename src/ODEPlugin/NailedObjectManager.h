@@ -37,7 +37,7 @@ public:
         maxFasteningForce += fasteningForce;
     }
 
-    bool isLimited();
+    bool isLimited(double currentTime);
 
     const double getMaxFasteningForce() { return maxFasteningForce; }
 
@@ -48,8 +48,6 @@ public:
     void setNailDirection(const Vector3 n) { n_ = n; }
 
     dBodyID getBodyID() { return objId_; }
-
-    dJointFeedback fb;
 
 private:
     double maxFasteningForce;
@@ -84,7 +82,6 @@ public:
     NailedObjectMap& map() { return objectMap; }
 
 private:
-    //std::map<dBodyID, NailedObjectPtr> objectMap;
     NailedObjectMap objectMap;
 };
 

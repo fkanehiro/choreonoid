@@ -47,11 +47,15 @@ public:
     // for VacuumGripper simulation
     void useVacuumGripper(bool on);
     void setVacuumGripperLimitCheckStartTime(double limitCheckStartTime);
+    void setVacuumGripperDot(double threshold);
+    void setVacuumGripperDistance(double threshold);
 
     // for NailDriver simulation
     void useNailDriver(bool on);
     void setNailDriverLimitCheckStartTime(double limitCheckStartTime);
     void setNailDriverDistantCheckCount(int distantCheckCount);
+    void setNailDriverDot(double threshold);
+    void setNailDriverDistance(double threshold);
 
 protected:
         

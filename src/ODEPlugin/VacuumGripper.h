@@ -41,8 +41,8 @@ public:
     bool isGripping(dBodyID body) const;
     void grip(dWorldID worldId, dBodyID gripped);
     void release();
-    int checkContact(int numContacts, dContact* contacts);
-    bool limitCheck();
+    int checkContact(int numContacts, dContact* contacts, double dotThreshold, double distanceThreshold);
+    bool limitCheck(double currentTime);
 private:
     bool on_;
 

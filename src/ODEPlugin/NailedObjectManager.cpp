@@ -23,23 +23,34 @@ using namespace std;
 
 NailedObject::~NailedObject()
 {
+#ifdef NAILDRIVER_STATUS
     MessageView::instance()->putln("NailDriver: *** joint destroy ***");
     cout << "NailDriver: *** joint destroy  **" << endl;
+#endif // NAILDRIVER_STATUS
     dJointSetFeedback(jointID, 0);
     dJointDestroy(jointID);
 }
 
-bool NailedObject::isLimited()
+/**
+ * @brief
+ */
+bool NailedObject::isLimited(double currentTime)
 {
     dJointFeedback* fb = dJointGetFeedback(jointID);
 
     Vector3 f(fb->f1);
     double fasteningForce = n_.dot(f);
 
-    // check fastening force
+#ifdef NAILDRIVER_DEBUG
+    cout << currentTime
+         << " : nail : " << fasteningForce
+         << endl;
+#endif // NAILDRIVER_DEBUG
+
     if (fasteningForce > maxFasteningForce) {
-        MessageView::instance()->putln(boost::format("FasteningForce limit exceeded: %f > %f") % fasteningForce % maxFasteningForce);
-        cout << boost::format("FasteningForce limit exceeded: %f > %f") % fasteningForce % maxFasteningForce << endl;
+        string msg = str(boost::format("FasteningForce limit exceeded: %f > %f") % fasteningForce % maxFasteningForce);
+        MessageView::instance()->putln(msg);
+        cout << msg << endl;
         return true;
     }
     return false;

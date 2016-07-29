@@ -39,7 +39,7 @@ public:
     bool on() const { return on_; }
     void on(bool on);
 
-    int checkContact(int numContacts, dContact* contacts);
+    int checkContact(int numContacts, dContact* contacts, double dotThreshold, double distanceThreshold);
 
     void contact() { near_callback_called = true; }
 
@@ -58,7 +58,7 @@ private:
     bool on_;
     bool contact_;
     bool ready_;
-    int not_called_conunt;
+    int not_called_count;
     bool near_callback_called;
 
 public:
