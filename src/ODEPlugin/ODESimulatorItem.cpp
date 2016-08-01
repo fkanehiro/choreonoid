@@ -1078,7 +1078,11 @@ void ODESimulatorItem::useVacuumGripper(bool on)
     for (VacuumGripperMap::iterator p = impl->vacuumGripperDevs.begin();
          p != impl->vacuumGripperDevs.end(); p++) {
         VacuumGripper* vacuumGripper = p->second;
-        vacuumGripper->on(on);
+
+        if (vacuumGripper->on() != on) {
+            vacuumGripper->on(on);
+            vacuumGripper->notifyStateChange();
+        }
     }
 }
 
@@ -1102,7 +1106,11 @@ void ODESimulatorItem::useNailDriver(bool on)
     for (NailDriverMap::iterator p = impl->nailDriverDevs.begin();
          p != impl->nailDriverDevs.end(); p++) {
         NailDriver* nailDriver = p->second;
-        nailDriver->on(on);
+
+        if (nailDriver->on() != on) {
+            nailDriver->on(on);
+            nailDriver->notifyStateChange();
+        }
     }
 }
 
