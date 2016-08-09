@@ -20,9 +20,6 @@
 #include <boost/bind.hpp>
 #include <QElapsedTimer>
 #include "gettext.h"
-#include <cnoid/VacuumGripper>
-#include <cnoid/NailDriver>
-#include "NailedObjectManager.h"
 
 #ifdef GAZEBO_ODE
 #include <gazebo/ode/ode.h>
@@ -35,6 +32,15 @@
 
 #include <cnoid/MessageView>
 #include <boost/format.hpp>
+
+#ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
+#include <cnoid/VacuumGripper>
+#endif                       /* VACUUM_GRIPPER_ODE */
+
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
+#include <cnoid/NailDriver>
+#include "NailedObjectManager.h"
+#endif                    /* NAIL_DRIVER_ODE */
 
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
 #define MECANUM_WHEEL_ODE_DEBUG 0
@@ -139,8 +145,14 @@ public:
 namespace cnoid {
   
 typedef std::map<dBodyID, Link*> CrawlerLinkMap;
+
+#ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
 typedef std::map<dBodyID, VacuumGripper*> VacuumGripperMap;
+#endif                       /* VACUUM_GRIPPER_ODE */
+
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
 typedef std::map<dBodyID, NailDriver*> NailDriverMap;
+#endif                    /* NAIL_DRIVER_ODE */
 
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
 typedef std::map<dBodyID, double> MecanumWheelSettingMap;
@@ -158,14 +170,6 @@ public:
     dJointGroupID contactJointGroupID;
     double timeStep;
     CrawlerLinkMap crawlerLinks;
-    VacuumGripperMap vacuumGripperDevs;
-    NailDriverMap nailDriverDevs;
-#ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
-    MecanumWheelSettingMap mecanumWheelSetting;
-#if (MECANUM_WHEEL_ODE_DEBUG > 0)    /* MECANUM_WHEEL_ODE_DEBUG */
-    bool                   mecanumWheelDebug;
-#endif                               /* MECANUM_WHEEL_ODE_DEBUG */
-#endif                      /* MECANUM_WHEEL_ODE */
     vector<ODELink*> geometryIdToLink;
 
     Selection stepMode;
@@ -189,13 +193,29 @@ public:
     double collisionTime;
     QElapsedTimer collisionTimer;
 
+#ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
+    VacuumGripperMap vacuumGripperDevs;
+
     double vacuumGripperLimitCheckStartTime;
     double vacuumGripperDot;
     double vacuumGripperDistance;
+#endif                       /* VACUUM_GRIPPER_ODE */
+
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
+    NailDriverMap nailDriverDevs;
+
     double nailDriverLimitCheckStartTime;
     double nailDriverDot;
     double nailDriverDistance;
     int nailDriverDistantCheckCount;
+#endif                    /* NAIL_DRIVER_ODE */
+
+#ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
+    MecanumWheelSettingMap mecanumWheelSetting;
+#if (MECANUM_WHEEL_ODE_DEBUG > 0)    /* MECANUM_WHEEL_ODE_DEBUG */
+    bool                   mecanumWheelDebug;
+#endif                               /* MECANUM_WHEEL_ODE_DEBUG */
+#endif                      /* MECANUM_WHEEL_ODE */
 
     ODESimulatorItemImpl(ODESimulatorItem* self);
     ODESimulatorItemImpl(ODESimulatorItem* self, const ODESimulatorItemImpl& org);
@@ -209,14 +229,19 @@ public:
     void store(Archive& archive);
     void restore(const Archive& archive);
     void collisionCallback(const CollisionPair& collisionPair);
-    VacuumGripper *isVacuumGripper(dBodyID body);
-    NailDriver *isNailDriver(dBodyID body);
 
+#ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
+    VacuumGripper *isVacuumGripper(dBodyID body);
     int checkContact(VacuumGripper* vacuumGripper, int numContacts, dContact* contacts);
+#endif                       /* VACUUM_GRIPPER_ODE */
+
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
+    NailDriver *isNailDriver(dBodyID body);
     int checkContact(NailDriver* nailDriver, int numContacts, dContact* contacts);
     void nailDriverCheck();
     bool nailedObjectGripCheck(NailedObjectPtr nobj);
     void nailedObjectLimitCheck();
+#endif                    /* NAIL_DRIVER_ODE */
 
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
     void preserveMecanumWheelSetting(ODEBody* odeBody);
@@ -302,7 +327,6 @@ void ODELink::createLinkBody(ODESimulatorItemImpl* simImpl, dWorldID worldID, OD
 
     dBodyID parentBodyID = parent ? parent->bodyID : 0;
 
-cout << boost::format("      link: %s jointType: %s (%d)")% link->name()  % link->jointTypeString() % link->jointType() << endl;
     switch(link->jointType()){
         
     case Link::ROTATIONAL_JOINT:
@@ -1073,6 +1097,7 @@ void ODESimulatorItem::useWorldCollisionDetector(bool on)
     impl->useWorldCollision = on;
 }
 
+#ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
 void ODESimulatorItem::useVacuumGripper(bool on)
 {
     for (VacuumGripperMap::iterator p = impl->vacuumGripperDevs.begin();
@@ -1100,7 +1125,9 @@ void ODESimulatorItem::setVacuumGripperDistance(double threshold)
 {
     impl->vacuumGripperDistance = threshold;
 }
+#endif                       /* VACUUM_GRIPPER_ODE */
 
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
 void ODESimulatorItem::useNailDriver(bool on)
 {
     for (NailDriverMap::iterator p = impl->nailDriverDevs.begin();
@@ -1133,6 +1160,7 @@ void ODESimulatorItem::setNailDriverDistance(double threshold)
 {
     impl->nailDriverDistance = threshold;
 }
+#endif                    /* NAIL_DRIVER_ODE */
 
 void ODESimulatorItem::setAllLinkPositionOutputMode(bool on)
 {
@@ -1156,11 +1184,19 @@ void ODESimulatorItemImpl::clear()
     }
 
     crawlerLinks.clear();
+
+#ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
     vacuumGripperDevs.clear();
+#endif                       /* VACUUM_GRIPPER_ODE */
+
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
     nailDriverDevs.clear();
+#endif                    /* NAIL_DRIVER_ODE */
+
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
     mecanumWheelSetting.clear();
 #endif                      /* MECANUM_WHEEL_ODE */
+
     geometryIdToLink.clear();
 }    
 
@@ -1220,10 +1256,14 @@ bool ODESimulatorItemImpl::initializeSimulation(const std::vector<SimulationBody
     for(size_t i=0; i < simBodies.size(); ++i){
         addBody(static_cast<ODEBody*>(simBodies[i]));
     }
+
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
     if (!nailDriverDevs.empty()) {
         self->addPostDynamicsFunction(boost::bind(&ODESimulatorItemImpl::nailDriverCheck, this));
         self->addPostDynamicsFunction(boost::bind(&ODESimulatorItemImpl::nailedObjectLimitCheck, this));
     }
+#endif                    /* NAIL_DRIVER_ODE */
+
     if(useWorldCollision)
         collisionDetector->makeReady();
 
@@ -1258,31 +1298,42 @@ void ODESimulatorItemImpl::addBody(ODEBody* odeBody)
 
     odeBody->createBody(this);
 
+#ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
     DeviceList<VacuumGripper> vacuumGrippers(body.devices());
+#endif                       /* VACUUM_GRIPPER_ODE */
+
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
     DeviceList<NailDriver> nailDrivers(body.devices());
+#endif                    /* NAIL_DRIVER_ODE */
 
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
     preserveMecanumWheelSetting(odeBody);
 #endif                      /* MECANUM_WHEEL_ODE */
 
+#if defined(VACUUM_GRIPPER_ODE) || defined(NAIL_DRIVER_ODE)    /* VACUUM_GRIPPER_ODE || NAIL_DRIVER_ODE */
     for (size_t i=0; i < odeBody->odeLinks.size(); ++i) {
 	ODELinkPtr odeLink = odeBody->odeLinks[i];
+
+#ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
 	for (unsigned int j=0; j<vacuumGrippers.size(); j++){
 	    VacuumGripper *vacuumGripper = vacuumGrippers[j];
 	    if (odeLink->link == vacuumGripper->link()){
                 vacuumGripper->gripper = odeLink->bodyID;
-                vacuumGripperDevs.insert(make_pair(odeLink->bodyID,
-						   vacuumGripper));
+                vacuumGripperDevs.insert(make_pair(odeLink->bodyID, vacuumGripper));
 	    }
 	}
+#endif                       /* VACUUM_GRIPPER_ODE */
+
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
 	for (unsigned int j=0; j<nailDrivers.size(); j++) {
 	    NailDriver *nailDriver = nailDrivers[j];
 	    if (odeLink->link == nailDriver->link()) {
-                nailDriverDevs.insert(make_pair(odeLink->bodyID,
-						nailDriver));
+                nailDriverDevs.insert(make_pair(odeLink->bodyID, nailDriver));
 	    }
 	}
+#endif                    /* NAIL_DRIVER_ODE */
     }
+#endif                                                         /* VACUUM_GRIPPER_ODE || NAIL_DRIVER_ODE */
 }
 
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
@@ -1440,6 +1491,8 @@ static void nearCallback(void* data, dGeomID g1, dGeomID g2)
 #endif                      /* MECANUM_WHEEL_ODE */
                 }
             }
+
+#ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
             if(!impl->vacuumGripperDevs.empty()){
                 VacuumGripper* vacuumGripper = 0;
                 dBodyID objId = 0;
@@ -1474,6 +1527,9 @@ static void nearCallback(void* data, dGeomID g1, dGeomID g2)
                     } // vacuumGripper->on()
                 } // vacuumGripper != 0
             }
+#endif                       /* VACUUM_GRIPPER_ODE */
+
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
             if(!impl->nailDriverDevs.empty()){
                 NailedObjectManager* nailedObjMngr = NailedObjectManager::getInstance();
                 NailDriver* nailDriver = 0;
@@ -1502,6 +1558,8 @@ static void nearCallback(void* data, dGeomID g1, dGeomID g2)
                     } // n != 0
                 } // nailDriver == 0
             } // empty()
+#endif                    /* NAIL_DRIVER_ODE */
+
 	    for(int i=0; i < numContacts; ++i){
                 dSurfaceParameters& surface = contacts[i].surface;
                 if(!crawlerlink){
@@ -1816,20 +1874,11 @@ void ODESimulatorItemImpl::restore(const Archive& archive)
     archive.read("velocityMode", velocityMode);
 }
 
+#ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
 VacuumGripper *ODESimulatorItemImpl::isVacuumGripper(dBodyID body)
 {
     VacuumGripperMap::iterator p = vacuumGripperDevs.find(body);
     if (p != vacuumGripperDevs.end()) {
-	return p->second;
-    }else{
-	return 0;
-    }
-}
-
-NailDriver *ODESimulatorItemImpl::isNailDriver(dBodyID body)
-{
-    NailDriverMap::iterator p = nailDriverDevs.find(body);
-    if (p != nailDriverDevs.end()) {
 	return p->second;
     }else{
 	return 0;
@@ -1847,6 +1896,18 @@ int ODESimulatorItemImpl::checkContact(VacuumGripper* vacuumGripper, int numCont
     cout << boost::format(_("VacuumGripper: numContacts=%d n=%d")) % numContacts % n << endl;
 #endif // VACUUM_GRIPPER_DEBUG
     return n;
+}
+#endif                       /* VACUUM_GRIPPER_ODE */
+
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
+NailDriver *ODESimulatorItemImpl::isNailDriver(dBodyID body)
+{
+    NailDriverMap::iterator p = nailDriverDevs.find(body);
+    if (p != nailDriverDevs.end()) {
+       return p->second;
+    }else{
+       return 0;
+    }
 }
 
 /**
@@ -1866,8 +1927,7 @@ int ODESimulatorItemImpl::checkContact(NailDriver* nailDriver, int numContacts, 
  */
 void ODESimulatorItemImpl::nailDriverCheck()
 {
-    for (NailDriverMap::iterator p = nailDriverDevs.begin();
-         p != nailDriverDevs.end(); p++) {
+    for (NailDriverMap::iterator p = nailDriverDevs.begin(); p != nailDriverDevs.end(); p++) {
         NailDriver* nailDriver = p->second;
         nailDriver->distantCheck(nailDriverDistantCheckCount);
     }
@@ -1917,3 +1977,5 @@ void ODESimulatorItemImpl::nailedObjectLimitCheck()
         }
     }
 }
+#endif                    /* NAIL_DRIVER_ODE */
+
