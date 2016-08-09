@@ -44,18 +44,20 @@ public:
     void setSurfaceLayerDepth(double value);
     void useWorldCollisionDetector(bool on);
 
-    // for VacuumGripper simulation
+#ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
     void useVacuumGripper(bool on);
     void setVacuumGripperLimitCheckStartTime(double limitCheckStartTime);
     void setVacuumGripperDot(double threshold);
     void setVacuumGripperDistance(double threshold);
+#endif                       /* VACUUM_GRIPPER_ODE */
 
-    // for NailDriver simulation
+#ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
     void useNailDriver(bool on);
     void setNailDriverLimitCheckStartTime(double limitCheckStartTime);
     void setNailDriverDistantCheckCount(int distantCheckCount);
     void setNailDriverDot(double threshold);
     void setNailDriverDistance(double threshold);
+#endif                    /* NAIL_DRIVER_ODE */
 
 protected:
         
