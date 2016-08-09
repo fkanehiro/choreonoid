@@ -12,6 +12,12 @@ if(NOT BUILD_ODE_PLUGIN AND NOT BUILD_GAZEBO_ODE_PLUGIN)
   return()
 endif()
 
+if(ENABLE_FEATURE_NAIL_DRIVER_ODE)
+  if(NOT ENABLE_FEATURE_VACUUM_GRIPPER_ODE)
+    set(ENABLE_FEATURE_VACUUM_GRIPPER_ODE ON CACHE BOOL "Enable feature of the vacuum gripper" FORCE)
+  endif()
+endif()
+
 # set(CMAKE_BUILD_TYPE Debug)
 
 if(BUILD_ODE_PLUGIN)
@@ -105,60 +111,25 @@ foreach(version ${versions})
  
   set(target Cnoid${version}Plugin)
 
-  if(ENABLE_FEATURE_VACUUM_GRIPPER_ODE AND ENABLE_FEATURE_NAIL_DRIVER_ODE)
-    set(sources
-      ODEPlugin.cpp
-      ODESimulatorItem.cpp
-      ODECollisionDetector.cpp
-      VacuumGripper.cpp
-      NailDriver.cpp
-      NailedObjectManager.cpp
-    )
+  set(sources
+    ODEPlugin.cpp
+    ODESimulatorItem.cpp
+    ODECollisionDetector.cpp
+  )
 
-    set(headers
-      ODESimulatorItem.h
-      VacuumGripper.h
-      NailDriver.h
-      exportdecl.h
-    )
-  elseif(ENABLE_FEATURE_VACUUM_GRIPPER_ODE)
-    set(sources
-      ODEPlugin.cpp
-      ODESimulatorItem.cpp
-      ODECollisionDetector.cpp
-      VacuumGripper.cpp
-    )
+  set(headers
+    ODESimulatorItem.h
+    exportdecl.h
+  )
 
-    set(headers
-      ODESimulatorItem.h
-      VacuumGripper.h
-      exportdecl.h
-    )
-  elseif(ENABLE_FEATURE_NAIL_DRIVER_ODE)
-    set(sources
-      ODEPlugin.cpp
-      ODESimulatorItem.cpp
-      ODECollisionDetector.cpp
-      NailDriver.cpp
-      NailedObjectManager.cpp
-    )
+  if(ENABLE_FEATURE_VACUUM_GRIPPER_ODE)
+    set(sources ${sources} VacuumGripper.cpp)
+    set(headers ${headers} VacuumGripper.h)
+  endif()
 
-    set(headers
-      ODESimulatorItem.h
-      NailDriver.h
-      exportdecl.h
-    )
-  else()
-    set(sources
-      ODEPlugin.cpp
-      ODESimulatorItem.cpp
-      ODECollisionDetector.cpp
-    )
-
-    set(headers
-      ODESimulatorItem.h
-      exportdecl.h
-    )
+  if(ENABLE_FEATURE_NAIL_DRIVER_ODE)
+    set(sources ${sources} NailDriver.cpp NailedObjectManager.cpp)
+    set(headers ${headers} NailDriver.h)
   endif()
 
   make_gettext_mofiles(${target} mofiles) 
