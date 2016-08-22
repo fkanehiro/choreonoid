@@ -45,17 +45,65 @@ public:
     void useWorldCollisionDetector(bool on);
 
 #ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
+    /**
+       @brief Change state all of the vacuum gripper.
+       @param[in] on If set true, enable the vacuum grippers. If set false, disable the vacuum grippers.
+     */
     void useVacuumGripper(bool on);
+
+    /**
+       @brief Set vacuum gripper limit check start time.
+       @param[in] limitCheckStartTime To set the time until the start of limit check of the restraint forces.
+     */
     void setVacuumGripperLimitCheckStartTime(double limitCheckStartTime);
+
+    /**
+       @brief Set vacuum gripper dot product threshold.
+       @param[in] threshold If the dot product of the grip surface and the object is less than this value,
+       then gripping the object.
+     */
     void setVacuumGripperDot(double threshold);
+
+    /**
+       @brief Set distance check threshold for between the vacuum gripper to the target object.
+       @param[in] threshold If the distance of the grip surface and the object is less than this value,
+       then gripping the object.
+     */
     void setVacuumGripperDistance(double threshold);
 #endif                       /* VACUUM_GRIPPER_ODE */
 
 #ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
+    /**
+       @brief Change state all of the nail driver.
+       @param[in] on If set true, enable the nail drivers. If set false, disable the nail drivers.
+     */
     void useNailDriver(bool on);
+
+    /**
+       @brief Set nail driver limit check start time.
+       @param[in] limitCheckStartTime To set the time until the start of limit check of the restraint forces.
+     */
     void setNailDriverLimitCheckStartTime(double limitCheckStartTime);
+
+    /**
+       @brief Set distance check count for between the nail driver to the target object.
+       Until more than the specified check count value will be treated as being in contact with each other.
+       @param[in] distantCheckCount Set the check count value.
+     */
     void setNailDriverDistantCheckCount(int distantCheckCount);
+
+    /**
+       @brief Set nail driver dot product threshold.
+       @param[in] threshold If the dot product of the grip surface and the object is less than this value,
+       then gripping the object.
+     */
     void setNailDriverDot(double threshold);
+
+    /**
+       @brief Set distance check threshold for between the nail driver to the target object.
+       @param[in] threshold If the distance of the grip surface and the object is less than this value,
+       then gripping the object.
+     */
     void setNailDriverDistance(double threshold);
 #endif                    /* NAIL_DRIVER_ODE */
 

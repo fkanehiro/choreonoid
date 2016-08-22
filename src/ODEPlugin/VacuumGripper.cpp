@@ -1,6 +1,7 @@
 /*!
-  @file
-  @author 
+  Vacuum gripper device.
+  @file VacuumGripper.cpp
+  @author
 */
 
 #include <cnoid/VacuumGripper>
@@ -40,8 +41,6 @@ Device* VacuumGripper::clone() const
     return new VacuumGripper(*this);
 }
 
-/*
- */
 VacuumGripper::VacuumGripper()
 {
     on_ = false;
@@ -78,13 +77,11 @@ VacuumGripper::VacuumGripper(const VacuumGripper& org, bool copyStateOnly)
     maxPeelTorque = org.maxPeelTorque;
 }
 
-
 const double* VacuumGripper::readState(const double* buf)
 {
     on_ = buf[0];
     return buf + 1;
 }
-
 
 double* VacuumGripper::writeState(double* out_buf) const
 {
@@ -129,9 +126,6 @@ void VacuumGripper::release()
 #endif // VACUUM_GRIPPER_STATUS
 }
 
-/**
- * @brief Check whether or not parallel the gripper surface and the object.
- */
 int VacuumGripper::checkContact(int numContacts, dContact* contacts, double dotThreshold, double distanceThreshold)
 {
     Vector3 vacuumPos = link()->p() + link()->R() * position;

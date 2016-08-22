@@ -1,6 +1,7 @@
 /*!
-  @file
-  @author 
+  Nail driver device.
+  @file NailDriver.cpp
+  @author
 */
 
 #include <cnoid/NailDriver>
@@ -41,8 +42,6 @@ Device* NailDriver::clone() const
     return new NailDriver(*this);
 }
 
-/*
- */
 NailDriver::NailDriver()
 {
     on_ = false;
@@ -82,13 +81,11 @@ NailDriver::NailDriver(const NailDriver& org, bool copyStateOnly)
     maxFasteningForce = org.maxFasteningForce;
 }
 
-
 const double* NailDriver::readState(const double* buf)
 {
     on_ = buf[0];
     return buf + 1;
 }
-
 
 double* NailDriver::writeState(double* out_buf) const
 {
@@ -173,9 +170,6 @@ void NailDriver::distantCheck(int distantCheckCount)
     }
 }
 
-/**
- * @brief Check whether or not parallel the muzzle and the object.
- */
 int NailDriver::checkContact(int numContacts, dContact* contacts, double dotThreshold, double distanceThreshold)
 {
     Link* link_ = link();
