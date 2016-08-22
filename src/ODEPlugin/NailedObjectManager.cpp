@@ -1,6 +1,7 @@
 /*!
-  @file
-  @author 
+  Nailed object manger.
+  @file NailedObjectManager.cpp
+  @author
 */
 
 #include "NailedObjectManager.h"
@@ -31,9 +32,6 @@ NailedObject::~NailedObject()
     dJointDestroy(jointID);
 }
 
-/**
- * @brief
- */
 bool NailedObject::isLimited(double currentTime)
 {
     dJointFeedback* fb = dJointGetFeedback(jointID);
@@ -56,28 +54,23 @@ bool NailedObject::isLimited(double currentTime)
     return false;
 }
 
-
 NailedObjectManager* NailedObjectManager::getInstance()
 {
     static NailedObjectManager instance;
     return &instance;
 }
 
-/*
- */
 NailedObjectManager::NailedObjectManager()
 {
 }
 
-/*
- */
 NailedObjectManager::~NailedObjectManager()
 {
 }
 
 void NailedObjectManager::clear()
 {
-//TODO
+    // TODO: implementation.
 }
 
 void NailedObjectManager::addObject(NailedObjectPtr obj)

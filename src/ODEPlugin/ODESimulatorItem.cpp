@@ -194,25 +194,46 @@ public:
     QElapsedTimer collisionTimer;
 
 #ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
+    /// This map store the vacuum gripper devices.
     VacuumGripperMap vacuumGripperDevs;
 
+    /// This value is time until the start of limit check of the restraint forces.
     double vacuumGripperLimitCheckStartTime;
+
+    /// If the dot product of the grip surface and the object is less than this value, then gripping the object.
     double vacuumGripperDot;
+
+    /// If the distance of the grip surface and the object is less than this value, then gripping the object.
     double vacuumGripperDistance;
 #endif                       /* VACUUM_GRIPPER_ODE */
 
 #ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
+    /// This map store the nail driver devices.
     NailDriverMap nailDriverDevs;
 
+    /// This value is time until the start of limit check of the restraint forces.
     double nailDriverLimitCheckStartTime;
+
+    /// If the dot product of the firing port and the object is less than this value, then firing a nail.
     double nailDriverDot;
+
+    /// If the distance of the nail driver and the object is less than this value, then fire a nail.
     double nailDriverDistance;
+
+    /**
+       Set thresholds for determining whether the nail driver was distant from the object.
+       This simulator has a function to detect the fact that two of the object is contacting.
+       If the number of times the function has not been called in succession exceeds this value,
+       it is determined that the nail driver is distant from the object.
+     */
     int nailDriverDistantCheckCount;
 #endif                    /* NAIL_DRIVER_ODE */
 
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
+    /// This map store the mecanum wheel settings.
     MecanumWheelSettingMap mecanumWheelSetting;
 #if (MECANUM_WHEEL_ODE_DEBUG > 0)    /* MECANUM_WHEEL_ODE_DEBUG */
+    /// Debug property for the mecanum wheel.
     bool                   mecanumWheelDebug;
 #endif                               /* MECANUM_WHEEL_ODE_DEBUG */
 #endif                      /* MECANUM_WHEEL_ODE */
@@ -231,19 +252,65 @@ public:
     void collisionCallback(const CollisionPair& collisionPair);
 
 #ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
+    /**
+       @brief To confirm whether the body has a vacuum gripper.
+       @param[in] body Set target's dBodyID.
+       @return Not zero return is vacuum gripper, zero return is somthing other.
+     */
     VacuumGripper *isVacuumGripper(dBodyID body);
+
+    /**
+       @brief Check whether or not parallel the gripper surface and the object.
+       @param[in] vacuumGripper Pointer of vacuum gripper.
+       @param[in] numContacts Number of contact objects.
+       @param[in] contacts Pointer of contact object.
+       @return A number, which is contact to this vacuum gripper.
+     */
     int checkContact(VacuumGripper* vacuumGripper, int numContacts, dContact* contacts);
 #endif                       /* VACUUM_GRIPPER_ODE */
 
 #ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
+    /**
+       @brief To confirm whether the body has a nail driver.
+       @param[in] body Set target's dBodyID.
+       @return If not zero, target is a nail driver. If zero, target is not a nail driver.
+     */
     NailDriver *isNailDriver(dBodyID body);
+
+    /**
+       @brief Check whether or not parallel the muzzle and the object.
+       @param[in] nailDrver Pointer of nail driver.
+       @param[in] numContacts Number of contact objects.
+       @param[in] contacts Pointer of contact object.
+       @return A number, which is contact to the nail driver.
+     */
     int checkContact(NailDriver* nailDriver, int numContacts, dContact* contacts);
+
+    /**
+       @brief Checking all device whether the away from object.
+     */
     void nailDriverCheck();
+
+    /**
+       @brief Whether the nailed object is gripped by vacuum gripper.
+       @param[in] nobj Pointer of nailed object.
+       @retval true It absorbed object.
+       @retval false It not absorbed object.
+     */
     bool nailedObjectGripCheck(NailedObjectPtr nobj);
+
+    /**
+       @brief Checking all nail whether limit of max fastening force exceeded.
+     */
     void nailedObjectLimitCheck();
 #endif                    /* NAIL_DRIVER_ODE */
 
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
+    /**
+       @brief Preserve mecanum wheel setting.
+       @param[in] odeBody Pointer of ODEBody.
+       @attention Please this method calling from addBody method.
+     */
     void preserveMecanumWheelSetting(ODEBody* odeBody);
 #endif                      /* MECANUM_WHEEL_ODE */
 };
@@ -1339,11 +1406,6 @@ void ODESimulatorItemImpl::addBody(ODEBody* odeBody)
 }
 
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
-/**
-   @brief Preserve mecanum wheel setting.
-   @param[in] odeBody Pointer of ODEBody.
-   @attention Please this method calling from addBody method.
- */
 void ODESimulatorItemImpl::preserveMecanumWheelSetting(ODEBody* odeBody)
 {
     Mapping* m;
@@ -1887,9 +1949,6 @@ VacuumGripper *ODESimulatorItemImpl::isVacuumGripper(dBodyID body)
     }
 }
 
-/**
- * @brief Check whether or not parallel the gripper surface and the object.
- */
 int ODESimulatorItemImpl::checkContact(VacuumGripper* vacuumGripper, int numContacts, dContact* contacts)
 {
     int n = vacuumGripper->checkContact(numContacts, contacts, vacuumGripperDot, vacuumGripperDistance);
@@ -1912,9 +1971,6 @@ NailDriver *ODESimulatorItemImpl::isNailDriver(dBodyID body)
     }
 }
 
-/**
- * @brief Check whether or not parallel the muzzle and the object.
- */
 int ODESimulatorItemImpl::checkContact(NailDriver* nailDriver, int numContacts, dContact* contacts)
 {
     int n = nailDriver->checkContact(numContacts, contacts, nailDriverDot, nailDriverDistance);
@@ -1925,8 +1981,6 @@ int ODESimulatorItemImpl::checkContact(NailDriver* nailDriver, int numContacts, 
     return n;
 }
 
-/*
- */
 void ODESimulatorItemImpl::nailDriverCheck()
 {
     for (NailDriverMap::iterator p = nailDriverDevs.begin(); p != nailDriverDevs.end(); p++) {
@@ -1935,9 +1989,6 @@ void ODESimulatorItemImpl::nailDriverCheck()
     }
 }
 
-/**
- * @brief whether the nailed object is gripped by vacuum gripper.
- */
 bool ODESimulatorItemImpl::nailedObjectGripCheck(NailedObjectPtr nobj)
 {
     for (VacuumGripperMap::iterator p = vacuumGripperDevs.begin();
@@ -1951,8 +2002,6 @@ bool ODESimulatorItemImpl::nailedObjectGripCheck(NailedObjectPtr nobj)
     return false;
 }
 
-/*
- */
 void ODESimulatorItemImpl::nailedObjectLimitCheck()
 {
 
