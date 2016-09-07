@@ -1422,7 +1422,40 @@ void ODESimulatorItemImpl::preserveMecanumWheelSetting(ODEBody* odeBody)
         return;
     }
 
+    /*
+      Link name of target. Target link must have crawler joint. If link is not exist or joint is not the crawler,
+      the setting is discard.
+     */
     links  = m->findListing("links");
+
+    /*
+      [rad] Set the angle of inclination of the barrel axis. The angle 0.0 radians means the axle parallel.
+      Relation of barrel axis and axle is as the follow figure.
+
+                   barrel axis
+                         ^      +-------+
+          Z              |      |       |
+          ^      axle <--+----- | Wheel |
+          |              |      |       |
+      Y <-o X            |      +-------+
+
+      If the barrel axis of rotation viewed from the direction of the '|', the direction of rotation of
+                                                                       v
+      negative value is clockwise and the direction of rotation of positive value is counter clockwise.
+
+                         |
+                         v
+                   barrel axis
+                         ^      +-------+
+          Z              |      |       |
+          ^      axle <--+----- | Wheel |
+          |              |      |       |
+      Y <-o X            |      +-------+
+
+      If you omit setting, will use the default value (pi/2 radians).  If you use default value that means same
+      behavior of the simplified crawler. The simplified crawler details,
+      please see http://choreonoid.org/en/manuals/1.5/simulation/crawler-simulation.html.
+     */
     angles = m->findListing("barrelAngles");
 
     if (! links->isValid() || links->size() < 1) {

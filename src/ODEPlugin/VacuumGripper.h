@@ -31,7 +31,7 @@ public:
     /**
        @brief Copy constructor.
        @param[in] org Reference of VacuumGripper.
-       @param[in] copyStateOnly Set true is copy state only. Set false is copy all. (default false) 
+       @param[in] copyStateOnly Set true is copy state only. Set false is copy all. (default false)
      */
     VacuumGripper(const VacuumGripper& org, bool copyStateOnly = false);
 
@@ -93,7 +93,12 @@ public:
        @brief Check whether or not parallel the gripper surface and the object.
        @param[in] numContacts Number of contact objects.
        @param[in] contacts Instance of contact objects.
-       @param[in] dotThreshold Set dot product threshold. This value use for checking parallel between objects.
+       @param[in] dotThreshold Set dot product threshold.
+       The argument used to determine whether to adsorbed it by contact with the object.
+       More specifically then if the following processing result is true, it will be subject to.
+
+           dotThreshold < (this->link()->R() * this->normal).dot(contacts->geom.normal)
+
        @param[in] distanceThreshold Threshold distance. This value use for checking distance between objects.
        @return A number, which is contanct to this gripper.
      */
@@ -111,10 +116,23 @@ private:
     bool on_;
 
 public:
-    /// Setting of gripping position. (Coordinates relative from the vacuum gripper's link position)
+    /// Position of adsorb of the vacuum gripper. Specify by relative coordinate from the this->gripper.
     Vector3 position;
+
     /// Setting of normal of grip surface.
+    /**
+       Normal line of adsorb surface of the vacuum gripper. The adsorb surface. When the object to the specified
+       absorb surface is in contact that absorb the object. Specify the directional vector by coordinate system of
+       the targetObject. If you specify a directional vector 0.0, -1.0, 0.0. The direction of the '===>' in the
+       coordinate system in the following figure is the adsorb surface.
+
+           Z             +-----------------------+
+           ^        ===> | vacuum gripper's link |
+           |             +-----------------------+
+       Y <-o X
+     */
     Vector3 normal;
+
     /// Setting of maximum pull force. [N]
     double maxPullForce;
     /// Setting of maximum shear force. [N]

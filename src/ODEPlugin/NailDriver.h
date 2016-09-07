@@ -65,7 +65,12 @@ public:
        @brief Check whether or not parallel the muzzle and the object.
        @param[in] numContacts Number of conatacts.
        @param[in] dContact Contacts object pointer of dContact.
-       @param[in] dotThreshold Set dot product threshold. This value use for checking parallel between objects.
+       @param[in] dotThreshold Set dot product threshold.
+       The setting of this threshold used to determine whether to fire the nail it by contact with the object.
+       More specifically then if the following processing result is true, it will be subject to.
+
+           dotThreshold < (this->link()->R() * this->normal).dot(contacts->geom.normal)
+
        @param[in] distanceThreshold Set distance threshold. This value use for checking distance between objects.
        @return A number, which is contanct to this nail driver.
      */
@@ -127,10 +132,22 @@ private:
     bool near_callback_called;
 
 public:
-    /// Setting of firing position. (Coordinates relative from the vacuum gripper's link position)
+    /// Position of muzzle of the nail driver. Specify by relative coordinate from the this->link().
     Vector3 position;
-    /// Setting of normal of firing surface.
+
+    /**
+       Normal line of muzzle surface of the nail driver. The muzzle surface. When the object to the specified
+       muzzle surface is in contact that target of naling the object. Specify the directional vector by coordinate
+       system of the targetObject. If you specify a directional vector -1.000, 0.000, 0.000. The direction of
+       the '===>' in the coordinate system in the following figure is the muzzle surface.
+
+           Z             +--------------------+
+           ^        ===> | nail driver's link |
+           |             +--------------------+
+       X <-o Y
+     */
     Vector3 normal;
+
     /// The force of direction of a nail fastening two objects.
     double maxFasteningForce;
     /// The simulation time of the latest contact to object.
