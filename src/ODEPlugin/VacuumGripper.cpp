@@ -129,13 +129,14 @@ void VacuumGripper::release()
 int VacuumGripper::checkContact(int numContacts, dContact* contacts, double dotThreshold, double distanceThreshold)
 {
     Vector3 vacuumPos = link()->p() + link()->R() * position;
+    Vector3 n = link->R() * normal;
 
     int n = 0;
     for(int i=0; i < numContacts; ++i){
 	Vector3 pos(contacts[i].geom.pos);
 	Vector3 v(contacts[i].geom.normal);
 
-	float isParallel = (link()->R() * normal).dot(v);
+	float isParallel = n.dot(v);
 
 	// Distance gripper (P: vacuumPos) and contact (A:pos)
 	Vector3 pa;
@@ -143,7 +144,7 @@ int VacuumGripper::checkContact(int numContacts, dContact* contacts, double dotT
 	pa[1] = pos[1] - vacuumPos[1];
 	pa[2] = pos[2] - vacuumPos[2];
 
-	float distance = abs(vacuumPos.dot(pa));
+	float distance = abs(n.dot(pa));
         if (isParallel < dotThreshold && distance < distanceThreshold) {
 	    n++;
 	}
