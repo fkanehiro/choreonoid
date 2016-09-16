@@ -90,9 +90,13 @@ double* VacuumGripper::writeState(double* out_buf) const
 }
 
 void VacuumGripper::on(bool on) {
-    string msg = str(boost::format(_("%s: %s %s => %s")) % typeName() % link()->name() % (on_ ? "ON" : "OFF") % (on ? "ON" : "OFF"));
+    string msg = str(
+        boost::format(_("%s: %s %s => %s")) % typeName() % link()->name() % (on_ ? "ON" : "OFF") % (on ? "ON" : "OFF")
+        );
     MessageView::instance()->putln(msg);
+#ifdef VACUUM_GRIPPER_DEBUG    /* VACUUM_GRIPPER_DEBUG */
     cout << msg << endl;
+#endif                         /* VACUUM_GRIPPER_DEBUG */
     on_ = on;
 }
 
@@ -181,21 +185,27 @@ bool VacuumGripper::limitCheck(double currentTime)
     if (pullForce + (dReal)maxPullForce < 0) {
         string msg = str(boost::format("PullForce limit exceeded: %f > %f") % fabs(pullForce) % maxPullForce);
         MessageView::instance()->putln(msg);
+#ifdef VACUUM_GRIPPER_DEBUG    /* VACUUM_GRIPPER_DEBUG */
         cout << msg << endl;
+#endif                         /* VACUUM_GRIPPER_DEBUG */
         return true;
     }
 
     if (shearForce > (dReal)maxShearForce) {
         string msg = str(boost::format("ShearForce limit exceeded: %f > %f") % shearForce % maxShearForce);
         MessageView::instance()->putln(msg);
+#ifdef VACUUM_GRIPPER_DEBUG    /* VACUUM_GRIPPER_DEBUG */
         cout << msg << endl;
+#endif                         /* VACUUM_GRIPPER_DEBUG */
         return true;
     }
 
     if (peelTorque > (dReal)maxPeelTorque) {
         string msg = str(boost::format("PeelTorque limit exceeded: %f > %f") % peelTorque % maxPeelTorque);
         MessageView::instance()->putln(msg);
+#ifdef VACUUM_GRIPPER_DEBUG    /* VACUUM_GRIPPER_DEBUG */
         cout << msg << endl;
+#endif                         /* VACUUM_GRIPPER_DEBUG */
         return true;
     }
 

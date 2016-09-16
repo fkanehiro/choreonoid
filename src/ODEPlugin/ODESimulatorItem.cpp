@@ -197,9 +197,6 @@ public:
     /// This map store the vacuum gripper devices.
     VacuumGripperMap vacuumGripperDevs;
 
-    /// This value is time until the start of limit check of the restraint forces.
-    double vacuumGripperLimitCheckStartTime;
-
     /// If the dot product of the grip surface and the object is less than this value, then gripping the object.
     double vacuumGripperDot;
 
@@ -210,9 +207,6 @@ public:
 #ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
     /// This map store the nail driver devices.
     NailDriverMap nailDriverDevs;
-
-    /// This value is time until the start of limit check of the restraint forces.
-    double nailDriverLimitCheckStartTime;
 
     /// If the dot product of the firing port and the object is less than this value, then firing a nail.
     double nailDriverDot;
@@ -260,13 +254,9 @@ public:
     VacuumGripper *isVacuumGripper(dBodyID body);
 
     /**
-       @brief Check whether or not parallel the gripper surface and the object.
-       @param[in] vacuumGripper Pointer of vacuum gripper.
-       @param[in] numContacts Number of contact objects.
-       @param[in] contacts Pointer of contact object.
-       @return A number, which is contact to this vacuum gripper.
      */
-    int checkContact(VacuumGripper* vacuumGripper, int numContacts, dContact* contacts);
+    void vacuumGripperNearCallback(
+        dBodyID body1ID, dBodyID body2ID, int numContacts, dContact* contacts, bool* isContactProcessingSkip);
 #endif                       /* VACUUM_GRIPPER_ODE */
 
 #ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
@@ -276,15 +266,6 @@ public:
        @return If not zero, target is a nail driver. If zero, target is not a nail driver.
      */
     NailDriver *isNailDriver(dBodyID body);
-
-    /**
-       @brief Check whether or not parallel the muzzle and the object.
-       @param[in] nailDrver Pointer of nail driver.
-       @param[in] numContacts Number of contact objects.
-       @param[in] contacts Pointer of contact object.
-       @return A number, which is contact to the nail driver.
-     */
-    int checkContact(NailDriver* nailDriver, int numContacts, dContact* contacts);
 
     /**
        @brief Checking all device whether the away from object.
@@ -303,6 +284,10 @@ public:
        @brief Checking all nail whether limit of max fastening force exceeded.
      */
     void nailedObjectLimitCheck();
+
+    /**
+     */
+    void nailDriverNearCallback(dBodyID body1ID, dBodyID body2ID, int numContacts, dContact* contacts);
 #endif                    /* NAIL_DRIVER_ODE */
 
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
@@ -312,6 +297,16 @@ public:
        @attention Please this method calling from addBody method.
      */
     void preserveMecanumWheelSetting(ODEBody* odeBody);
+
+    /**
+       @brief Get mecanum wheel setting.
+       @param[in] dBdyId Set dBodyID of the link that owns the mecanum wheel.
+       @param[out] angle Return barrel angle of the mecanum wheel.
+       If this method's return value is false, this variable always 0.0.
+       @retval true The link (dBydID) is the mecanum wheel.
+       @retval false The link (dBdyId) is not the mecanum wheel.
+     */
+    bool getMecanumWheelSetting(dBodyID dBdyId, double* angle);
 #endif                      /* MECANUM_WHEEL_ODE */
 };
 }
@@ -1180,11 +1175,6 @@ void ODESimulatorItem::useVacuumGripper(bool on)
     }
 }
 
-void ODESimulatorItem::setVacuumGripperLimitCheckStartTime(double limitCheckStartTime)
-{
-    impl->vacuumGripperLimitCheckStartTime = limitCheckStartTime;
-}
-
 void ODESimulatorItem::setVacuumGripperDot(double threshold)
 {
     impl->vacuumGripperDot = threshold;
@@ -1208,11 +1198,6 @@ void ODESimulatorItem::useNailDriver(bool on)
             nailDriver->notifyStateChange();
         }
     }
-}
-
-void ODESimulatorItem::setNailDriverLimitCheckStartTime(double limitCheckStartTime)
-{
-    impl->nailDriverLimitCheckStartTime = limitCheckStartTime;
 }
 
 void ODESimulatorItem::setNailDriverDistantCheckCount(int distantCheckCount)
@@ -1520,6 +1505,22 @@ void ODESimulatorItemImpl::preserveMecanumWheelSetting(ODEBody* odeBody)
 
     return;
 }
+
+bool ODESimulatorItemImpl::getMecanumWheelSetting(dBodyID dBdyId, double* angle)
+{
+    if (angle) {
+        MecanumWheelSettingMap::iterator it = mecanumWheelSetting.find(dBdyId);
+
+        if (it != mecanumWheelSetting.end()) {
+            *angle = it->second;
+            return true;
+        }
+
+        *angle = 0.0;
+    }
+
+    return false;
+}
 #endif                      /* MECANUM_WHEEL_ODE */
 
 void ODESimulatorItem::initializeSimulationThread()
@@ -1559,14 +1560,7 @@ static void nearCallback(void* data, dGeomID g1, dGeomID g2)
                 if(p != impl->crawlerLinks.end()){
                     crawlerlink = p->second;
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
-                    {
-                        MecanumWheelSettingMap::iterator it = impl->mecanumWheelSetting.find(body1ID);
-
-                        if (it != impl->mecanumWheelSetting.end()) {
-                            isMecanumWheel = true;
-                            barrelAngle    = it->second;
-                        }
-                    }
+                    isMecanumWheel = impl->getMecanumWheelSetting(body1ID, &barrelAngle);
 #endif                      /* MECANUM_WHEEL_ODE */
                 }
                 p = impl->crawlerLinks.find(body2ID);
@@ -1574,87 +1568,26 @@ static void nearCallback(void* data, dGeomID g1, dGeomID g2)
                     crawlerlink = p->second;
                     sign = -1.0;
 #ifdef MECANUM_WHEEL_ODE    /* MECANUM_WHEEL_ODE */
-                    {
-                        MecanumWheelSettingMap::iterator it = impl->mecanumWheelSetting.find(body2ID);
-
-                        if (it != impl->mecanumWheelSetting.end()) {
-                            isMecanumWheel = true;
-                            barrelAngle    = it->second;
-                        } else {
-                            isMecanumWheel = false;
-                            barrelAngle    = 0.0;
-                        }
-                    }
+                    isMecanumWheel = impl->getMecanumWheelSetting(body2ID, &barrelAngle);
 #endif                      /* MECANUM_WHEEL_ODE */
                 }
             }
 
 #ifdef VACUUM_GRIPPER_ODE    /* VACUUM_GRIPPER_ODE */
-            if(!impl->vacuumGripperDevs.empty()){
-                VacuumGripper* vacuumGripper = 0;
-                dBodyID objId = 0;
-		if ((vacuumGripper = impl->isVacuumGripper(body1ID))){
-                    objId = body2ID;
-                } else if ((vacuumGripper = impl->isVacuumGripper(body2ID))){
-		    objId = body1ID;
-                }
-                if (vacuumGripper != 0) {
-                    if (vacuumGripper->on()) {
-                        if (vacuumGripper->isGripping()) {
-                            // If this object is gripping by the gripper,
-                            // perform limit check.
-                            if (vacuumGripper->isGripping(objId)) {
-                                if (impl->self->currentTime() >
-                                    impl->vacuumGripperLimitCheckStartTime) {
-                                    if (vacuumGripper->limitCheck(impl->self->currentTime())){
-                                        vacuumGripper->release();
-                                    }
-                                }
-                            }
-                        } else { // !vacuumGripper->isGripping()
-                            int n = impl->checkContact(vacuumGripper, numContacts, contacts);
-                            if (n != 0) {
-				vacuumGripper->grip(impl->worldID, objId);
-                            }
-                        } // vacuumGripper->isGripping()
-                    } else { // vacuumGripper is off
-                        if (vacuumGripper->isGripping()) {
-			    vacuumGripper->release();
-                        }
-                    } // vacuumGripper->on()
-                } // vacuumGripper != 0
+            bool isContactProcessingSkip;
+
+            isContactProcessingSkip = false;
+
+            impl->vacuumGripperNearCallback(body1ID, body2ID, numContacts, contacts, &isContactProcessingSkip);
+
+            if (isContactProcessingSkip) {
+                // Contact processing is not needed, because already connected by the fixed joint.
+                return;
             }
 #endif                       /* VACUUM_GRIPPER_ODE */
 
 #ifdef NAIL_DRIVER_ODE    /* NAIL_DRIVER_ODE */
-            if(!impl->nailDriverDevs.empty()){
-                NailedObjectManager* nailedObjMngr = NailedObjectManager::getInstance();
-                NailDriver* nailDriver = 0;
-                dBodyID objId = 0;
-		if ((nailDriver = impl->isNailDriver(body1ID))){
-                    objId = body2ID;
-                } else if ((nailDriver = impl->isNailDriver(body2ID))){
-		    objId = body1ID;
-                }
-                if (nailDriver != 0) {
-                    nailDriver->contact();
-                    int n = impl->checkContact(nailDriver, numContacts, contacts);
-                    if (n) {
-                        if (nailDriver->ready()) {
-                            NailedObjectPtr nobj = nailedObjMngr->get(objId);
-                            if (!nobj) {
-                                // first
-                                nobj = new NailedObject(impl->worldID, objId);
-                                nailDriver->fire(nobj);
-                                nailedObjMngr->addObject(nobj);
-                            } else {
-                                // second
-                                nailDriver->fire(nobj);
-                            }
-                        } // nailDriver->ready()
-                    } // n != 0
-                } // nailDriver == 0
-            } // empty()
+            impl->nailDriverNearCallback(body1ID, body2ID, numContacts, contacts);
 #endif                    /* NAIL_DRIVER_ODE */
 
 	    for(int i=0; i < numContacts; ++i){
@@ -1982,14 +1915,62 @@ VacuumGripper *ODESimulatorItemImpl::isVacuumGripper(dBodyID body)
     }
 }
 
-int ODESimulatorItemImpl::checkContact(VacuumGripper* vacuumGripper, int numContacts, dContact* contacts)
+void ODESimulatorItemImpl::vacuumGripperNearCallback(
+    dBodyID body1ID, dBodyID body2ID, int numContacts, dContact* contacts, bool* isContactProcessingSkip)
 {
-    int n = vacuumGripper->checkContact(numContacts, contacts, vacuumGripperDot, vacuumGripperDistance);
-#ifdef VACUUM_GRIPPER_DEBUG
-    MessageView::instance()->putln(boost::format(_("VacuumGripper: numContacts=%d n=%d")) % numContacts % n);
-    cout << boost::format(_("VacuumGripper: numContacts=%d n=%d")) % numContacts % n << endl;
-#endif // VACUUM_GRIPPER_DEBUG
-    return n;
+    VacuumGripper* vg;
+    dBodyID        objId;
+    int            n;
+
+    if (! body1ID || ! body2ID || ! isContactProcessingSkip) {
+        return;
+    }
+
+    vg                       = 0;
+    objId                    = 0;
+    n                        = 0;
+    *isContactProcessingSkip = false;
+
+    if (vacuumGripperDevs.empty()) {
+        return;
+    } else if (vg = isVacuumGripper(body1ID)) {
+        objId = body2ID;
+    } else if (vg = isVacuumGripper(body2ID)) {
+        objId = body1ID;
+    } else {
+        return;
+    }
+
+    if (! vg->on()) {
+        if (vg->isGripping()) {
+            vg->release();
+        }
+
+        return;
+    }
+
+    if (! vg->isGripping()) {
+        // In case of contact to the object to absorb.
+        n = vg->checkContact(numContacts, contacts, vacuumGripperDot, vacuumGripperDistance);
+#ifdef VACUUM_GRIPPER_DEBUG    /* VACUUM_GRIPPER_DEBUG */
+        cout << boost::format(_("VacuumGripper: numContacts=%d n=%d")) % numContacts % n << endl;
+#endif                         /* VACUUM_GRIPPER_DEBUG */
+
+        if (n > 0) {
+            vg->grip(worldID, objId);
+        }
+
+        return;
+    }
+
+    // If this object is gripping by the gripper, perform limit check.
+    if (vg->isGripping(objId) && vg->limitCheck(self->currentTime())) {
+        vg->release();
+    }
+
+    *isContactProcessingSkip = true;
+
+    return;
 }
 #endif                       /* VACUUM_GRIPPER_ODE */
 
@@ -2002,16 +1983,6 @@ NailDriver *ODESimulatorItemImpl::isNailDriver(dBodyID body)
     }else{
        return 0;
     }
-}
-
-int ODESimulatorItemImpl::checkContact(NailDriver* nailDriver, int numContacts, dContact* contacts)
-{
-    int n = nailDriver->checkContact(numContacts, contacts, nailDriverDot, nailDriverDistance);
-#ifdef NAILDRIVER_DEBUG
-    MessageView::instance()->putln(boost::format(_("NailDriver: numContacts=%d n=%d")) % numContacts % n);
-    cout << boost::format(_("NailDriver: numContacts=%d n=%d")) % numContacts % n << endl;
-#endif // NAILDRIVER_DEBUG
-    return n;
 }
 
 void ODESimulatorItemImpl::nailDriverCheck()
@@ -2037,11 +2008,6 @@ bool ODESimulatorItemImpl::nailedObjectGripCheck(NailedObjectPtr nobj)
 
 void ODESimulatorItemImpl::nailedObjectLimitCheck()
 {
-
-    if (self->currentTime() < nailDriverLimitCheckStartTime) {
-        return;
-    }
-
     NailedObjectManager* nailedObjMngr = NailedObjectManager::getInstance();
 
     NailedObjectMap& map = nailedObjMngr->map();
@@ -2060,6 +2026,58 @@ void ODESimulatorItemImpl::nailedObjectLimitCheck()
             p++;
         }
     }
+}
+
+void ODESimulatorItemImpl::nailDriverNearCallback(dBodyID body1ID, dBodyID body2ID, int numContacts, dContact* contacts)
+{
+    NailedObjectManager* nObjMngr;
+    NailDriver*          nd;
+    dBodyID              objId;
+    int                  n;
+
+    if (! body1ID || ! body2ID || nailDriverDevs.empty()) {
+        return;
+    }
+
+    nObjMngr = NailedObjectManager::getInstance();
+    nd       = 0;
+    objId    = 0;
+    n        = 0;
+
+    if (! nObjMngr) {
+        // What happen ? Programmers error ?
+        return;
+    } else if ((nd = isNailDriver(body1ID))) {
+        objId = body2ID;
+    } else if ((nd = isNailDriver(body2ID))) {
+        objId = body1ID;
+    }
+
+    if (! nd) {
+        return;
+    }
+
+    nd->contact();
+    n = nd->checkContact(numContacts, contacts, nailDriverDot, nailDriverDistance);
+#ifdef NAILDRIVER_DEBUG    /* NAILDRIVER_DEBUG */
+    cout << boost::format(_("NailDriver: numContacts=%d n=%d")) % numContacts % n << endl;
+#endif                     /* NAILDRIVER_DEBUG */
+
+    if (n > 0 && nd->ready()) {
+        NailedObjectPtr p = nObjMngr->get(objId);
+
+        if (! p) {
+            //  Hitting the nail at first time.
+            p = new NailedObject(worldID, objId);
+            nd->fire(p);
+            nObjMngr->addObject(p);
+        } else {
+            // Hitting the nail at second and subsequent time.
+            nd->fire(p);
+        }
+    }
+
+    return;
 }
 #endif                    /* NAIL_DRIVER_ODE */
 
