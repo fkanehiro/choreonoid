@@ -52,12 +52,6 @@ public:
     void useVacuumGripper(bool on);
 
     /**
-       @brief Set vacuum gripper limit check start time.
-       @param[in] limitCheckStartTime To set the time until the start of limit check of the restraint forces.
-     */
-    void setVacuumGripperLimitCheckStartTime(double limitCheckStartTime);
-
-    /**
        @brief Set vacuum gripper dot product threshold.
        @param[in] threshold If the dot product of the grip surface and the object is less than this value,
        then gripping the object.

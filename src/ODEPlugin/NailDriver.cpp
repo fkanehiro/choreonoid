@@ -94,9 +94,13 @@ double* NailDriver::writeState(double* out_buf) const
 }
 
 void NailDriver::on(bool on) {
-    string msg = str(boost::format(_("%s: %s %s => %s")) % typeName() % link()->name() % (on_ ? "ON" : "OFF") % (on ? "ON" : "OFF"));
+    string msg = str(
+        boost::format(_("%s: %s %s => %s")) % typeName() % link()->name() % (on_ ? "ON" : "OFF") % (on ? "ON" : "OFF")
+        );
     MessageView::instance()->putln(msg);
+#ifdef NAILDRIVER_DEBUG    /* NAILDRIVER_DEBUG */
     cout << msg << endl;
+#endif                     /* NAILDRIVER_DEBUG */
 
     if (on_ == false && on == true) {
         // By switching from off to on,
@@ -111,7 +115,9 @@ void NailDriver::setReady()
 {
     string msg = str(boost::format(_("%s: %s Ready")) % typeName() % link()->name());
     MessageView::instance()->putln(msg);
+#ifdef NAILDRIVER_DEBUG    /* NAILDRIVER_DEBUG */
     cout << msg << endl;
+#endif                     /* NAILDRIVER_DEBUG */
 
     ready_ = true;
 }
@@ -121,7 +127,9 @@ void NailDriver::fire(NailedObject* nobj)
     string msg;
     msg = str(boost::format(_("%s: %s Fire")) % typeName() % link()->name());
     MessageView::instance()->putln(msg);
+#ifdef NAILDRIVER_DEBUG    /* NAILDRIVER_DEBUG */
     cout << msg << endl;
+#endif                     /* NAILDRIVER_DEBUG */
 
     if (nobj->getNailCount() == 0) {
 #ifdef NAILDRIVER_STATUS
