@@ -182,7 +182,7 @@ int NailDriver::checkContact(int numContacts, dContact* contacts, double dotThre
 {
     Link* link_ = link();
     Vector3 muzzle = link_->p() + link_->R() * position;
-    Vector3 n = link->R() * normal;
+    Vector3 norm = link_->R() * normal;
 
     int n = 0;
     for (int i=0; i < numContacts; ++i) {
@@ -197,7 +197,7 @@ int NailDriver::checkContact(int numContacts, dContact* contacts, double dotThre
 	pa[1] = pos[1] - muzzle[1];
 	pa[2] = pos[2] - muzzle[2];
 
-	float distance = fabs(n.dot(pa));
+	float distance = fabs(norm.dot(pa));
         if (isParallel < dotThreshold && distance < distanceThreshold) {
 	    n++;
 	}
