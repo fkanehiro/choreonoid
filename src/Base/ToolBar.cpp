@@ -10,7 +10,7 @@
 #include <QStyleOptionToolBar>
 #include <QMouseEvent>
 
-#ifdef Q_OS_MAC
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #undef Q_OS_MAC
 #endif
 #ifdef Q_OS_MAC
