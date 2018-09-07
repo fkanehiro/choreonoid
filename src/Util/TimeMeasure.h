@@ -4,6 +4,7 @@
 
 #ifndef _WIN32
 
+#include <sys/time.h>
 #include <time.h>
 #ifdef _POSIX_C_SOURCE
 #if _POSIX_C_SOURCE >= 199309L

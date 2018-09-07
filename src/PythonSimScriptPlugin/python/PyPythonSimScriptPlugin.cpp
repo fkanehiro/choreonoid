@@ -2,8 +2,8 @@
   @author Shin'ichiro Nakaoka
 */
 
-#include "../PythonSimScriptItem.h"
 #include <cnoid/PyBase>
+#include "../PythonSimScriptItem.h"
 
 using namespace cnoid;
 

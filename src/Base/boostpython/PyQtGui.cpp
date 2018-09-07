@@ -2,10 +2,10 @@
   @author Shin'ichiro Nakaoka
 */
 
+#include <cnoid/PyUtil>
 #include <QWidget>
 #include <QMainWindow>
 #include <QToolButton>
-#include <cnoid/PyUtil>
 
 using namespace boost;
 using namespace boost::python;

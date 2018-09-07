@@ -14,7 +14,6 @@
 #include <cnoid/OpenRTMUtil>
 #include <cnoid/LazyCaller>
 #include <rtm/DataFlowComponentBase.h>
-#include <rtm/DataInPort.h>
 #include <rtm/idl/InterfaceDataTypes.hh>
 #include <cnoid/corba/PointCloud.hh>
 
@@ -28,6 +27,7 @@
 # endif
 #endif
 
+#include <rtm/DataInPort.h>
 #include "gettext.h"
 
 using namespace std;

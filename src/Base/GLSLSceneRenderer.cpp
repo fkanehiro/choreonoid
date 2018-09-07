@@ -12,7 +12,11 @@
 #include <cnoid/EigenUtil>
 #include <cnoid/NullOut>
 #include <Eigen/StdVector>
+#ifdef __APPLE__
+#include <glu.h>
+#else
 #include <GL/glu.h>
+#endif
 #include <boost/optional.hpp>
 #include <unordered_map>
 #include <mutex>

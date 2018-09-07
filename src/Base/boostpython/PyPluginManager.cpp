@@ -2,8 +2,8 @@
   @author Shin'ichiro Nakaoka
 */
 
-#include "../PluginManager.h"
 #include <boost/python.hpp>
+#include "../PluginManager.h"
 
 using namespace boost::python;
 using namespace cnoid;

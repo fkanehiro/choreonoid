@@ -3,8 +3,8 @@
    \author Shin'ichiro Nakaoka
 */
 
-#include "PythonScriptItem.h"
 #include "PythonScriptItemImpl.h"
+#include "PythonScriptItem.h"
 #include <cnoid/ItemManager>
 #include <cnoid/Archive>
 #include <cnoid/FileUtil>

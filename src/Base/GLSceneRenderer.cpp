@@ -10,7 +10,11 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#ifdef __APPLE__
+#include <gl3.h>
+#else
 #include <GL/gl.h>
+#endif
 
 using namespace std;
 using namespace cnoid;

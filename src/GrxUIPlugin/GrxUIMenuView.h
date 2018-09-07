@@ -6,8 +6,8 @@
 #ifndef CNOID_GRXUI_PLUGIN_GRXUI_MENU_VIEW_H
 #define CNOID_GRXUI_PLUGIN_GRXUI_MENU_VIEW_H
 
-#include <cnoid/View>
 #include <cnoid/PyUtil>
+#include <cnoid/View>
 #include <QMessageBox>
 #include "exportdecl.h"
 

@@ -3,6 +3,7 @@
    \author Shin'ichiro Nakaoka
 */
 
+#include <cnoid/PyUtil>
 #include "GrxUIMenuView.h"
 #include <cnoid/ViewManager>
 #include <cnoid/MainWindow>
@@ -11,7 +12,6 @@
 #include <cnoid/Buttons>
 #include <cnoid/CheckBox>
 #include <cnoid/LineEdit>
-#include <cnoid/PyUtil>
 #include <cnoid/PythonExecutor>
 #include <QBoxLayout>
 #include <QStackedLayout>

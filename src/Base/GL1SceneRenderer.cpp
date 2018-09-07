@@ -21,7 +21,11 @@
 */
 #include "gl_1_5.h"
 
+#ifdef __APPLE__
+#include <glu.h>
+#else
 #include <GL/glu.h>
+#endif
 
 using namespace std;
 using namespace cnoid;

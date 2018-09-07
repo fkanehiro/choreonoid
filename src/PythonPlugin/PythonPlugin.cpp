@@ -2,10 +2,10 @@
    @author Shin'ichiro Nakaoka
 */
 
+#include <cnoid/PyUtil>
 #include "PythonConsoleView.h"
 #include "PythonScriptItem.h"
 #include "PythonExecutor.h"
-#include <cnoid/PyUtil>
 #include <cnoid/Plugin>
 #include <cnoid/AppConfig>
 #include <cnoid/MenuManager>

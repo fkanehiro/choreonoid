@@ -382,7 +382,11 @@ set(Boost_ADDITIONAL_VERSIONS "1.56" "1.57" "1.58" "1.59" "1.60" "1.61" "1.62" "
 set(boost_packages system filesystem program_options iostreams)
 
 if(ENABLE_PYTHON AND USE_BOOST_PYTHON)
-  set(boost_packages ${boost_packages} python)
+  if (APPLE)
+    set(boost_packages ${boost_packages} python27)
+  else()
+    set(boost_packages ${boost_packages} python)
+  endif()
 endif()
 
 # Old GCC does not implement the regex library correctly

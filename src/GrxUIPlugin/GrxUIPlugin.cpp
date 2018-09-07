@@ -2,9 +2,9 @@
   @author Shin'ichiro Nakaoka
 */
 
+#include <cnoid/PyUtil>
 #include "GrxUIPlugin.h"
 #include "GrxUIMenuView.h"
-#include <cnoid/PyUtil>
 #include <cnoid/MenuManager>
 #include <cnoid/AppConfig>
 

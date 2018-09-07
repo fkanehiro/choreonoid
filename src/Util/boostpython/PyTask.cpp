@@ -3,10 +3,10 @@
   @author Shin'ichiro Nakaoka
  */
 
+#include "PyUtil.h"
 #include "../Task.h"
 #include "../AbstractTaskSequencer.h"
 #include "../ValueTree.h"
-#include "PyUtil.h"
 #include <boost/python/raw_function.hpp>
 #include <set>
 #include <map>

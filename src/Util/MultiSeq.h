@@ -89,11 +89,27 @@ public:
 
         if(fillNewElements){
             if(newNumParts != prevNumParts){
+#ifdef __APPLE__
+                // TODO
+                typename Container::iterator it;
+                for (it = Container::begin(); it != Container::end(); it+=1){
+                    *it = defaultValue();
+                }
+#else
                 std::fill(Container::begin(), Container::end(), defaultValue());
+#endif
             } else {
                 if(newNumFrames > prevNumFrames){
                     if(prevNumFrames == 0){
+#ifdef __APPLE__
+                        //TODO
+                        typename Container::iterator it;
+                        for (it = Container::begin() + prevNumFrames * newNumParts; it != Container::end(); it+=1){
+                            *it = defaultValue();
+                        }
+#else
                         std::fill(Container::begin() + prevNumFrames * newNumParts, Container::end(), defaultValue());
+#endif
                     } else {
                         Frame last = frame(prevNumFrames - 1);
                         for(int i=prevNumFrames; i < newNumFrames; ++i){

@@ -2,8 +2,8 @@
   @author Shin'ichiro Nakaoka
 */
 
-#include "../OpenHRPInterpreterServiceItem.h"
 #include <cnoid/PyBase>
+#include "../OpenHRPInterpreterServiceItem.h"
 
 using namespace boost::python;
 using namespace cnoid;

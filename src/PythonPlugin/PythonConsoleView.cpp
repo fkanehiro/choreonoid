@@ -2,8 +2,8 @@
    @author Shin'ichiro Nakaoka
 */
 
-#include "PythonConsoleView.h"
 #include <cnoid/PyUtil>
+#include "PythonConsoleView.h"
 #include <cnoid/MessageView>
 #include <cnoid/ViewManager>
 #include <QPlainTextEdit>

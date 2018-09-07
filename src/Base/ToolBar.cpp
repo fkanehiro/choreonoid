@@ -11,6 +11,9 @@
 #include <QMouseEvent>
 
 #ifdef Q_OS_MAC
+#undef Q_OS_MAC
+#endif
+#ifdef Q_OS_MAC
 #include <QCleanlooksStyle>
 #include <QMacStyle>
 #endif

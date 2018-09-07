@@ -80,9 +80,9 @@ void findExecutablePath()
         executablePath_ = buf;
     }
         
-    filesystem::path path;
+    filesystem::path path(executablePath_);
     // remove dot from a path like bin/./choreonoid
-    makePathCompact(filesystem::path(executablePath_), path);
+    makePathCompact(path);
     //filesystem::path path = filesystem::canonical(filesystem::path(executablePath_));
 #else
     filesystem::path path(executablePath_);

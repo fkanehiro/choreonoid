@@ -2,8 +2,8 @@
   @author Shin'ichiro Nakaoka
 */
 
-#include "../GrxUIPlugin.h"
 #include "../GrxUIMenuView.h"
+#include "../GrxUIPlugin.h"
 #include <cnoid/LazyCaller>
 
 #ifdef CNOID_USE_PYBIND11

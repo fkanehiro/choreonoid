@@ -2,10 +2,10 @@
   @author Shin'ichiro Nakaoka
 */
 
+#include <cnoid/PyUtil>
 #include "../ToolBar.h"
 #include "../TimeBar.h"
 #include <cnoid/PySignal>
-#include <cnoid/PyUtil>
 
 using namespace boost::python;
 using namespace cnoid;

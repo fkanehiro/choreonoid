@@ -9,6 +9,10 @@ add_cnoid_library(CnoidPyBase SHARED PyBase.cpp ${headers})
 target_link_libraries(CnoidPyBase CnoidBase CnoidPyUtil)
 apply_common_setting_for_library(CnoidPyBase "${headers}")
 
+if (APPLE)
+  set(Boost_PYTHON_LIBRARY ${Boost_PYTHON27_LIBRARY})
+endif()
+
 add_cnoid_python_module(PyQtCore PyQtCore.cpp)
 target_link_libraries(PyQtCore ${QT_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY})
 

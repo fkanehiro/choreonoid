@@ -3,8 +3,8 @@
    \author Shin'ichiro Nakaoka
 */
 
-#include "PythonSimScriptItem.h"
 #include <cnoid/PythonScriptItemImpl>
+#include "PythonSimScriptItem.h"
 #include <cnoid/ItemManager>
 #include <cnoid/Archive>
 #include "gettext.h"

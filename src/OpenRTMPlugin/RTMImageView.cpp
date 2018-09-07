@@ -9,7 +9,6 @@
 #include <cnoid/LazyCaller>
 #include <cnoid/CorbaUtil>
 #include <rtm/DataFlowComponentBase.h>
-#include <rtm/DataInPort.h>
 
 #ifdef USE_BUILTIN_CAMERA_IMAGE_IDL
 # include "deprecated/corba/CameraImage.hh"
@@ -21,6 +20,7 @@
 # endif
 #endif
 
+#include <rtm/DataInPort.h>
 #include <QBoxLayout>
 #include <boost/format.hpp>
 #include "gettext.h"
