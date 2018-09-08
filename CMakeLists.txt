@@ -346,7 +346,17 @@ if(ENABLE_PYTHON)
     set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
     find_package(PythonLibs 3 REQUIRED)
   else()
-    find_package(PythonLibs 2 REQUIRED)
+    if (APPLE)
+      execute_process(
+	COMMAND python-config --prefix
+	OUTPUT_VARIABLE PYTHON_PREFIX
+	RESULT_VARIABLE RESULT
+	OUTPUT_STRIP_TRAILING_WHITESPACE)
+      set(PYTHON_INCLUDE_PATH ${PYTHON_PREFIX}/include/python2.7)
+      set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/lib/libpython2.7.dylib)
+    else()
+      find_package(PythonLibs 2 REQUIRED)
+    endif()
   endif()
   include_directories(${PYTHON_INCLUDE_PATH})
   set(CNOID_PYTHON_SUBDIR ${CNOID_PLUGIN_SUBDIR}/python)
@@ -1249,6 +1259,9 @@ if(ENABLE_PYTHON)
       RUNTIME_OUTPUT_NAME ${module}
       LIBRARY_OUTPUT_NAME ${module}
       PREFIX "")
+    if (APPLE)
+      set_target_properties(${target} PROPERTIES SUFFIX ".so")
+    endif()
 
     if(ENABLE_INSTALL_RPATH)
       if(APPLE)
