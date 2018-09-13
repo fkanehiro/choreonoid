@@ -1388,7 +1388,7 @@ void GLSLSceneRendererImpl::renderMaterial(const SgMaterial* material)
         setAlpha(1.0 - material->transparency());
 
     } else if(currentNolightingProgram){
-        currentProgram->setColor(material->diffuseColor());
+        currentProgram->setColor(material->diffuseColor() + material->emissiveColor());
     }
 }
 

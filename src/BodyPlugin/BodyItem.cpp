@@ -340,7 +340,7 @@ bool BodyItemImpl::loadModelFile(const std::string& filename)
     if(newBody){
         body = newBody;
         body->setName(self->name());
-        body->initializeState();
+        body->initializePosition();
     }
 
     initBody(false);
@@ -358,7 +358,7 @@ void BodyItem::setBody(Body* body)
 void BodyItemImpl::setBody(Body* body_)
 {
     body = body_;
-    body->initializeState();
+    body->initializePosition();
 
     initBody(false);
 }
@@ -1220,9 +1220,11 @@ bool BodyItemImpl::restore(const Archive& archive)
         if(qs->isValid()){
             int nj = body->numAllJoints();
             if(qs->size() != nj){
-                MessageView::instance()->putln(
-                    MessageView::WARNING,
-                    format("Mismatched size of the stored joint positions for %1%") % self->name());
+                if(qs->size() != body->numJoints()){
+                    MessageView::instance()->putln(
+                        format("Mismatched size of the stored joint positions for %1%") % self->name(),
+                        MessageView::WARNING);
+                }
                 nj = std::min(qs->size(), nj);
             }
             for(int i=0; i < nj; ++i){
@@ -1241,9 +1243,11 @@ bool BodyItemImpl::restore(const Archive& archive)
             BodyState::Data& q = initialState.data(BodyState::JOINT_POSITIONS);
             int nj = body->numAllJoints();
             if(qs->size() != nj){
-                MessageView::instance()->putln(
-                    MessageView::WARNING,
-                    format("Mismatched size of the stored initial joint positions for %1%") % self->name());
+                if(qs->size() != body->numJoints()){
+                    MessageView::instance()->putln(
+                        format("Mismatched size of the stored initial joint positions for %1%") % self->name(),
+                        MessageView::WARNING);
+                }
                 nj = std::min(qs->size(), nj);
             }
             q.resize(nj);
